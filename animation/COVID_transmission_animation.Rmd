@@ -1,0 +1,58 @@
+---
+author: "Siddarth Wekhande"
+date: "March 21, 2020"
+output: html_document
+---
+
+```{r}
+library(maps)
+library(ggplot2)
+library(gganimate)
+library(tidyverse)
+library(reshape2)
+library(plotly)
+```
+
+
+```{r}
+world<-map_data('world')
+p <- ggplot(legend=FALSE) +
+geom_polygon( data=world, aes(x=long, y=lat,group=group)) + theme(panel.background = element_blank()) + theme(panel.grid.major = element_blank()) + theme(panel.grid.minor = element_blank()) + theme(axis.text.x = element_blank(),axis.text.y = element_blank()) + theme(axis.ticks = element_blank()) + xlab("") + ylab("")
+
+```
+
+
+```{r}
+rec_data = read.csv("/COVID-19-master/COVID-19-master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv")
+head(rec_data)
+
+```
+
+
+```{r}
+#arrange data
+rec_data$Location = paste0(rec_data$Province.State," ",rec_data$Country.Region)
+
+drops <- c("Lat","Long", "Province.State", "Country.Region","Location")
+date_data = rec_data[ , !(names(rec_data) %in% drops)]
+row.names(date_data) = rec_data$Location
+date_data = t(date_data)
+date_data = melt(date_data)
+
+date_data1 = merge(x=date_data, y=rec_data[,c("Lat","Long","Location")], by.x = "Var2",by.y="Location")
+
+date_data1$Var1 = as.Date.character(substring(date_data1[,c("Var1")],2,nchar(as.character(date_data1[,c("Var1")]))), format = "%m.%d.%y")
+```
+
+```{r}
+p <- ggplot(legend=FALSE) +
+geom_polygon( data=world, aes(x=long, y=lat,group=group)) + theme(panel.background = element_blank()) + theme(panel.grid.major = element_blank()) + theme(panel.grid.minor = element_blank()) + theme(axis.text.x = element_blank(),axis.text.y = element_blank()) + theme(axis.ticks = element_blank()) + xlab("") + ylab("")
+
+a <- p + geom_point(data=date_data1,aes(Long,Lat, color = Var2) ,size = log(date_data1$value*100), alpha=0.3) + theme(legend.position = "none") 
+
+anim = animate(a + transition_time(Var1) +
+  labs(title = "Day: {frame_time}"), fps=10, height = 1000, width =1800, res=100)
+
+#Save to gif file 
+#anim_save("filepath", anim)
+```
