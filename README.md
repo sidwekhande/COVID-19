@@ -1,3 +1,8 @@
+Exploring different ways to use data collected from COVID19:
+1. Transmission animation
+-------------------------------------------------------------------------------------------------------------------------------------
+The bottom information is forked from John Hopkins CSSE, and consists of the data used for different things in this repo
+-------------------------------------------------------------------------------------------------------------------------------------
 # 2019 Novel Coronavirus COVID-19 (2019-nCoV) Data Repository by Johns Hopkins CSSE
 
 
