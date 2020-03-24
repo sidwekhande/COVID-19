@@ -13,26 +13,53 @@ library(reshape2)
 library(plotly)
 ```
 
-
-```{r}
-world<-map_data('world')
-p <- ggplot(legend=FALSE) +
-geom_polygon( data=world, aes(x=long, y=lat,group=group)) + theme(panel.background = element_blank()) + theme(panel.grid.major = element_blank()) + theme(panel.grid.minor = element_blank()) + theme(axis.text.x = element_blank(),axis.text.y = element_blank()) + theme(axis.ticks = element_blank()) + xlab("") + ylab("")
-
-```
-
-
 ```{r}
 rec_data = read.csv("/COVID-19-master/COVID-19-master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv")
+
+rec_data$Location = paste0(rec_data$Province.State," ",rec_data$Country.Region)
+
 head(rec_data)
 
 ```
+```{r}
+#Some rows have values that decrease (and does not correspond to recovered/deaths values). I coud not place why this number should change unless there is a discrepancy in the official number reported), but for now I "correct" the data by replacing the decreased number with the max number in that row
+problem_rows = c()
+for(row in rownames(rec_data)){
+  a=0
+  for(nm in rec_data[row,][6:dim(rec_data)[2]-1]){
+    if (nm < a){
+      problem_rows = unique(c(problem_rows,row))
+    }
+  a = nm
+  }
+}
+
+#print how many rows have decreasing values
+print(length(problem_rows))
+```
+
+```{r}
+#correct the data 
+
+for(row in problem_rows){
+  a=0
+  i=5
+  for(nm in rec_data[row,][5:(dim(rec_data)[2]-1)]){
+    if (nm < a){
+      rec_data[row,][i] = a
+      nm=a
+    }
+    i = i+1
+    a = nm
+  }
+}
+
+```
+
 
 
 ```{r}
 #arrange data
-rec_data$Location = paste0(rec_data$Province.State," ",rec_data$Country.Region)
-
 drops <- c("Lat","Long", "Province.State", "Country.Region","Location")
 date_data = rec_data[ , !(names(rec_data) %in% drops)]
 row.names(date_data) = rec_data$Location
@@ -45,14 +72,14 @@ date_data1$Var1 = as.Date.character(substring(date_data1[,c("Var1")],2,nchar(as.
 ```
 
 ```{r}
-p <- ggplot(legend=FALSE) +
-geom_polygon( data=world, aes(x=long, y=lat,group=group)) + theme(panel.background = element_blank()) + theme(panel.grid.major = element_blank()) + theme(panel.grid.minor = element_blank()) + theme(axis.text.x = element_blank(),axis.text.y = element_blank()) + theme(axis.ticks = element_blank()) + xlab("") + ylab("")
+p <- ggplot(legend=FALSE) + geom_polygon( data=world, aes(x=long, y=lat,group=group), fill="white", colour="white")  + theme_dark() + theme(axis.text.x = element_blank(),axis.text.y = element_blank(), axis.title = element_blank()) + theme(axis.ticks = element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-a <- p + geom_point(data=date_data1,aes(Long,Lat, color = Var2) ,size = log(date_data1$value*100), alpha=0.3) + theme(legend.position = "none") 
+a <- p + geom_point(data=date_data1,aes(Long,Lat, color = Var2) ,size = log(date_data1$value), alpha=0.7) + theme(legend.position = "none") 
 
 anim = animate(a + transition_time(Var1) +
   labs(title = "Day: {frame_time}"), fps=10, height = 1000, width =1800, res=100)
 
 #Save to gif file 
-#anim_save("filepath", anim)
+#anim_save("filepath.gif", anim)
 ```
+
