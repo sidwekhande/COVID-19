@@ -1,5 +1,9 @@
 Exploring different ways to use data collected from COVID19:
 1. Transmission animation
+
+![](covid19_res7.gif)
+
+
 -------------------------------------------------------------------------------------------------------------------------------------
 The bottom information is forked from John Hopkins CSSE, and consists of the data used for different things in this repo
 -------------------------------------------------------------------------------------------------------------------------------------
